@@ -490,7 +490,7 @@ export default function Index({
             return hours * 60 + minutes;
           };
 
-          // Comparar la posición 0 con la posición 1 solo si el primer fiscal es "Terminal" y el segundo es "Centro"
+          // Comparar la posición 0 con la posición 1 solo si el primer fiscal es "Terminal" y el segundo es "Centro" 
           
           for (let i = 0; i < group.length - 1; i++) {
             if (group[i].fiscal === "Terminal" && group[i + 1].fiscal === "Centro") {
