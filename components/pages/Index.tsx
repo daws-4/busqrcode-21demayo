@@ -1179,24 +1179,60 @@ export default function Index({
 
   const { toPDF, targetRef } = usePDF({ filename: `retardados${fecha}` });
 
-  //lista de fiscales trampeando
+  //lista de ficales trampeando
   const getFiscalesTramposos = () => {
-    const qrGroups: { [qr_id: string]: any[] } = {};
+    const qrMap: { [key: string]: any } = {};
+    const tramposos: any[] = [];
+    const qrIdCounts: { [key: string]: number } = {};
 
-    // Agrupar los timestamps por qr_id
+    // Agrupar timestamps por la fecha del qr_id y contar ocurrencias de qr_id completo
     if (Array.isArray(timestamps)) {
-      timestamps.forEach((timestamp: any) => { // Use timestamps prop here
-        if (!qrGroups[timestamp.qr_id]) {
-          qrGroups[timestamp.qr_id] = [];
+      timestamps.forEach((timestamp: any) => {
+        const qrParts = timestamp.qr_id.split('-');
+        const date = qrParts.slice(0, 3).join('-'); // yyyy-mm-dd
+        const id = qrParts[3]; // id
+
+        // Contar ocurrencias del qr_id completo
+        qrIdCounts[timestamp.qr_id] = (qrIdCounts[timestamp.qr_id] || 0) + 1;
+
+        if (!qrMap[date]) {
+          qrMap[date] = {
+            minId: Infinity,
+            tramposos: [],
+          };
         }
-        qrGroups[timestamp.qr_id].push(timestamp);
+
+        if (parseInt(id) < qrMap[date].minId) {
+          qrMap[date].minId = parseInt(id);
+        }
+      });
+
+      // Identificar y agregar los timestamps tramposos
+      timestamps.forEach((timestamp: any) => {
+        const qrParts = timestamp.qr_id.split('-');
+        const date = qrParts.slice(0, 3).join('-'); // yyyy-mm-dd
+        const id = qrParts[3]; // id
+
+        // Si el id es menor al mínimo id para esa fecha, es tramposo
+        if (parseInt(id) > qrMap[date].minId) {
+          tramposos.push(timestamp);
+        }
+
+        // Si el qr_id completo aparece más de una vez, también es tramposo
+        if (qrIdCounts[timestamp.qr_id] > 1) {
+          tramposos.push(timestamp);
+        }
       });
     }
 
-    // Convertir el objeto de grupos a un array de grupos
-    const tramposos: any[] = Object.values(qrGroups);
+    // Eliminar duplicados
+    const uniqueTramposos = tramposos.filter((timestamp, index, self) =>
+      index === self.findIndex((t) => (
+        t.qr_id === timestamp.qr_id
+      ))
+    );
 
-    return tramposos;
+    return uniqueTramposos;
   };
 
   const fiscaleTramposos = getFiscalesTramposos();
@@ -1204,8 +1240,8 @@ export default function Index({
   useEffect(() => {
     // Actualizar el estado fiscalesTramposos when timestamps change
     setFiscalesTramposos(fiscaleTramposos);
-  }, [timestamps]); // Depend on the timestamps prop
-
+  }, [timestamps]); 
+  
   console.log("Fiscales tramposos:", fiscaleTramposos);
   return (
     <div>

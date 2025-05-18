@@ -179,6 +179,7 @@ export async function POST(request: any) {
         id_fiscal,
         timestamp_telefono,
         timestamp_salida,
+        qr_id,
       });
       const saveTimestamp = await timestamp.save();
       return NextResponse.json(saveTimestamp);
@@ -191,6 +192,7 @@ export async function POST(request: any) {
           id_fiscal,
           timestamp_telefono,
           timestamp_salida: null,
+          qr_id,
         });
         const saveTimestamp = await timestamp.save();
         console.log("saveTimestamp:", saveTimestamp);
