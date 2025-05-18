@@ -324,6 +324,10 @@ export default function Index({
       key: "fiscal",
       label: "Fiscal",
     },
+    {
+    key:'qr_id', 
+    label: 'Id del qr',
+    },
   ];
   if (ruta && unidad) {
     columns = [
@@ -1241,7 +1245,7 @@ export default function Index({
     // Actualizar el estado fiscalesTramposos when timestamps change
     setFiscalesTramposos(fiscaleTramposos);
   }, [timestamps]); 
-  
+
   console.log("Fiscales tramposos:", fiscaleTramposos);
   return (
     <div>
