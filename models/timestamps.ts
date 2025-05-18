@@ -29,6 +29,11 @@ const timestamps = new Schema(
         type: String,
         default: null,
         trim: true,
+    },
+    qr_id:{
+        type: String,
+        required: true,
+        trim: true,
     }
   },
   {

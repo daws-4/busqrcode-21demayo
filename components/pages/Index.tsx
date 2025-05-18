@@ -90,11 +90,6 @@ const CustomCard: React.FC<CustomCardProps> = ({ columns1, titulo, group, onDown
   );
 };
 
-
-
-
-
-
 export default function Index({
   horarios,
   rutas,
@@ -123,6 +118,8 @@ export default function Index({
   const [loading, setLoading] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
   const [mostrarRetardados, setMostrarRetardados] = useState(true)
+  const [fiscalesTramposos, setFiscalesTramposos] = useState<any>([])
+
   useEffect(() => {
     const handleScroll = () => {
       setIsAtTop(window.scrollY == 0);
@@ -247,6 +244,7 @@ export default function Index({
         unidad: unidad[0].numero,
         ruta: ruta[0].nombre,
         fiscal: fiscal[0].ubicacion,
+        qr_id: timestamp.qr_id,
       };
     } else {
       return {
@@ -258,6 +256,7 @@ export default function Index({
         unidad: unidad[0].numero,
         ruta: ruta[0].nombre,
         fiscal: fiscal[0].ubicacion,
+        qr_id: timestamp.qr_id,
       };
     }
 
@@ -441,8 +440,10 @@ export default function Index({
       hora_telefono: timestamp.hora_telefono,
       fiscal: timestamp.fiscal,
       ruta: timestamp.ruta,
+      qr_id: timestamp.qr_id,
     };
   });
+
 
   // Lista de todas las unidades que existen en el array de timestamps
   const unidadesordenadas = [...new Set(setTimestamps.map((timestamp: any) => timestamp.unidad))].sort((a, b) => a - b);
@@ -1178,7 +1179,34 @@ export default function Index({
 
   const { toPDF, targetRef } = usePDF({ filename: `retardados${fecha}` });
 
+  //lista de fiscales trampeando
+  const getFiscalesTramposos = () => {
+    const qrGroups: { [qr_id: string]: any[] } = {};
 
+    // Agrupar los timestamps por qr_id
+    if (Array.isArray(timestamps)) {
+      timestamps.forEach((timestamp: any) => { // Use timestamps prop here
+        if (!qrGroups[timestamp.qr_id]) {
+          qrGroups[timestamp.qr_id] = [];
+        }
+        qrGroups[timestamp.qr_id].push(timestamp);
+      });
+    }
+
+    // Convertir el objeto de grupos a un array de grupos
+    const tramposos: any[] = Object.values(qrGroups);
+
+    return tramposos;
+  };
+
+  const fiscaleTramposos = getFiscalesTramposos();
+
+  useEffect(() => {
+    // Actualizar el estado fiscalesTramposos when timestamps change
+    setFiscalesTramposos(fiscaleTramposos);
+  }, [timestamps]); // Depend on the timestamps prop
+
+  console.log("Fiscales tramposos:", fiscaleTramposos);
   return (
     <div>
       <div ref={hiddenContainerRef} style={{ position: 'absolute', top: '-9999px', left: '-9999px', width: 'auto', height: 'auto', overflow: 'hidden' }}></div>
@@ -1410,14 +1438,14 @@ export default function Index({
         </div>
       </section>}
 
-       {/* lista de retardados */}
+      {/* lista de retardados */}
 
 
-      <section  className="flex flex-col items-center justify-center gap-4 py-8 md:py-10 px-4 sm:px-6 lg:px-8 xl:px-12">
+      <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10 px-4 sm:px-6 lg:px-8 xl:px-12">
         <h1 className="text-xl font-bold">Lista de Retardados</h1>
         <Button onPress={() => toPDF()} className="">Descargar Pdf </Button>
         {listaRetardados.length > 0 ? (
-          <Table ref={targetRef}  className='max-w-3xl' aria-label="Example table with dynamic content">
+          <Table ref={targetRef} className='max-w-3xl' aria-label="Example table with dynamic content">
             <TableHeader columns={columns1} aria-label="Tabla">
               {(column) => (
                 <TableColumn key={column.key}>{column.label}</TableColumn>
@@ -1445,7 +1473,7 @@ export default function Index({
           <p>No hay Retardados</p>
         )}
       </section>
-      
+
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
 
         {/* body*/}

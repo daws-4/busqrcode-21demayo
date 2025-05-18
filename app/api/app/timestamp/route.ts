@@ -13,13 +13,15 @@ export async function POST(request: any) {
     id_fiscal,
     timestamp_telefono,
     timestamp_salida,
+    qr_id
   } = await request.json();
   console.log(
     id_ruta,
     id_unidad,
     id_fiscal,
     timestamp_telefono,
-    timestamp_salida
+    timestamp_salida,
+    qr_id
   );
 
   const formatHour = (dateString: string) => {
